@@ -44,6 +44,6 @@ Having trouble with Pages? Check out our [documentation](https://help.github.com
   <body>
       <h1>Processing.js Test</h1>
       <p>This is my first Processing.js web-based sketch:</p>
-     <canvas data-processing-sources="hello-web.pde"></canvas>
+     <canvas data-processing-sources="PhoebeMoh_a3/PhoebeMoh_a3"></canvas>
  </body>
 </html>
