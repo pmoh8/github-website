@@ -47,7 +47,7 @@ float[] xLines;
 float[] yLines;
 
 void setup(){
-  size(1000,800);
+  size(800,500);
   background(255);  
   fill(50,140,200);
   readData();
