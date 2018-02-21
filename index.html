@@ -1,14 +1,41 @@
-
- <!DOCTYPE html>
+<!DOCTYPE html>
  <html>
  <head>
-      <title>Hello Web - Processing.js Test</title>
+      <title>Visualization Funtimes</title>
       <script src="processing.min.js"></script>
+	  <script src="script.js"></script>
+	  <link rel="stylesheet" href="style.css">
   </head>
   <body>
-      <h1>Processing.js Test</h1>
-      <p>Testingggggg:</p><br>
-   <canvas data-processing-sources="PhoebeMoh_a2.pde"></canvas><br>
-     <canvas data-processing-sources="PhoebeMoh_a3.pde"></canvas>
+  
+  <!-- Tab links -->
+  <h3>Click one of the tabs below to explore!</h3>
+	<div class="tab">
+	  <button class="tablinks" onclick="openTab(event, 'Line/Bar')">Line/Bar</button>
+	  <button class="tablinks" onclick="openTab(event, 'Parallel Coordinates')" id="defaultOpen">Parallel Coordinates</button>
+	</div>
+
+	
+	<!-- Tab content -->
+	<div id="Line/Bar" class="tabcontent">
+	<table style="width:100%">
+	  <tr>
+		<td><canvas data-processing-sources="PhoebeMoh_a2.pde"></canvas></td>
+		
+	  </tr>
+	</table>
+		
+	</div>
+
+	<div id="Parallel Coordinates" class="tabcontent">
+		<table style="width:100%">
+		  <tr>
+			<td><canvas data-processing-sources="PhoebeMoh_a3.pde"></canvas></td>
+			
+		  </tr>
+		</table>
+	  
+	</div>
+     
  </body>
 </html>
