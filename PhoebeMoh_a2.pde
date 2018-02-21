@@ -48,7 +48,6 @@ float[] yLines;
 
 void setup(){
   size(1000,800);
-  surface.setResizable(true);
   background(255);  
   fill(50,140,200);
   readData();
