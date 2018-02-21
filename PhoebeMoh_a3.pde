@@ -44,7 +44,7 @@ float offsetY;
 
 
 void setup(){
-  size(800,800);
+  size(800,500);
   background(255);  
   fill(50,140,200);
   c1 = color(66, 134, 244);
