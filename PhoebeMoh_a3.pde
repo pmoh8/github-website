@@ -491,7 +491,7 @@ void hoverInfo(){
       
       float boxLength = 1.1*max(textWidth(s1),textWidth(s2),textWidth(s3));
       fill(250,250,250,200);
-      rect(mouseX+15,mouseY-4*textAscent(),boxLength,7*textAscent());
+      rect(mouseX+15,mouseY-5*textAscent(),boxLength,7*textAscent());
       textAlign(LEFT);
       fill(color(0,0,0));
       text(s1,mouseX+20,mouseY-20);
@@ -526,7 +526,7 @@ void hoverInfo(){
       //fill(240,240,240,95);
       //float boxLength = 1.1*max(textWidth(s1),textWidth(s2),textWidth(s3));
       //stroke(0,0,0,0);
-      //rect(mouseX+15,mouseY-3*textAscent(),boxLength,6*textAscent());
+      //rect(mouseX+15,mouseY-4*textAscent(),boxLength,6*textAscent());
       //textAlign(LEFT);
       //fill(color(0,0,0));
       //text(s1,mouseX+20,mouseY-20);
