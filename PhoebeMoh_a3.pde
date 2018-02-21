@@ -491,7 +491,7 @@ void hoverInfo(){
       
       float boxLength = 1.1*max(textWidth(s1),textWidth(s2),textWidth(s3));
       fill(250,250,250,200);
-      rect(mouseX+15,mouseY-5*textAscent(),boxLength,7*textAscent());
+      rect(mouseX+15,mouseY-7*textAscent(),boxLength,7*textAscent());
       textAlign(LEFT);
       fill(color(0,0,0));
       text(s1,mouseX+20,mouseY-20);
@@ -502,36 +502,7 @@ void hoverInfo(){
       superMegaUltraHighlight = -1;
     }
   }
-  //color yes =lines.get(mouseX,mouseY);
-  //int b = (int)blue(yes);
-  //int g = ((int)green(yes));
-  //int r = ((int)red(yes));
-  
-  //int index = b/10-1+g/10*20+r/10*(20^2);
- 
 
-    
-      // int attrLeft = (int)((mouseX - chartOriginX)/intervalLength);
-      //int index = list.get(0);
-      //String s1 = names[index];
-      //String s2 = attributes[attrLeft]+": "+data[attrLeft][index];
-      //String s3;
-      //if(attrLeft < numAttributes-1){
-      //  s3 = attributes[attrLeft+1]+": "+data[attrLeft + 1][index];
-      //}
-      //else{
-      //  s3="";
-      //}
-      
-      //fill(240,240,240,95);
-      //float boxLength = 1.1*max(textWidth(s1),textWidth(s2),textWidth(s3));
-      //stroke(0,0,0,0);
-      //rect(mouseX+15,mouseY-4*textAscent(),boxLength,6*textAscent());
-      //textAlign(LEFT);
-      //fill(color(0,0,0));
-      //text(s1,mouseX+20,mouseY-20);
-      //text(s2,mouseX+20,mouseY);
-      //text(s3,mouseX+20,mouseY+20);
     
  
 }
