@@ -1,4 +1,4 @@
-
+ArrayList<Integer> stuff;
 color c1, c2,c3,ultraHighlight;
 String path = "data.csv";
 
