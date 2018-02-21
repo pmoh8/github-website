@@ -205,7 +205,6 @@ void drawSelectionBox(){
               valTop = maxes[i] - ((chartOriginY+chartLengthY)-min(clickY1,clickY1+drawY))/chartLengthY*range;
               valBottom = maxes[i] - ((chartOriginY+chartLengthY)-max(clickY1,clickY1+drawY))/chartLengthY*range; 
             }
-            //println(valTop);
             for(int j = 0; j <numItems; j++){
               float point = data[i][j];
               
@@ -223,7 +222,6 @@ void drawSelectionBox(){
           else{
             
             colorMode = "oneForAll";
-            println(colorMode);
             fill(lerpColor(c1,c2,.5));
             rect(xCoord-5,chartOriginY,10,chartLengthY);
             set = true;
@@ -232,7 +230,6 @@ void drawSelectionBox(){
         }
         
         else if (abs(clickX1-xCoord)>5&& !axisSelect){
-          //println(abs(clickX1-xCoord));
           float drawY = clickY2;
           float drawX = clickX2;
           if(clickY1+clickY2 <chartOriginY){
@@ -303,7 +300,6 @@ void drawLines(){
       
       if(j!=0){
         strokeWeight(1);
-        //println(colorMode);
         if(colorMode == "default"){
           axisSelect = false;
           for (int k = 0; k<11; k++){
@@ -513,8 +509,6 @@ void hoverInfo(){
   
   //int index = b/10-1+g/10*20+r/10*(20^2);
  
-  //print(r);print(".");print(g);print(".");println(b);
-  //println(index);
 
     
       // int attrLeft = (int)((mouseX - chartOriginX)/intervalLength);
