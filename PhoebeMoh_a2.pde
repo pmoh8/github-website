@@ -1,4 +1,4 @@
-String path = "data.csv";
+String path = "data1.csv";
 String xName;
 String yName;
 String[] names;  
