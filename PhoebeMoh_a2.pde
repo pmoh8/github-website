@@ -108,7 +108,6 @@ void drawAxes(){
     j = minVal;
   }
   int opt = optimalTicks(range);
-  println(j);
   
   int counter=0;
   while(j<=maxVal+opt){
@@ -309,7 +308,6 @@ int optimalTicks(int range){
   }
   else{
     tick = int(x/5);
-  } //<>//
-  println(tick);
+  } 
   return tick;
 }
