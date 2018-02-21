@@ -45,7 +45,6 @@ float offsetY;
 
 void setup(){
   size(1000,800);
-  surface.setResizable(true);
   background(255);  
   fill(50,140,200);
   c1 = color(66, 134, 244);
