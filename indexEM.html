@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+h1 {
+	font-family: "Helvetica";
+}
+.stateAbbrv {
+  fill: #000000;
+  font-family: "Helvetica";
+  font-size: 13px;
+}
+.stateEV {
+  fill: #000000;
+  font-family: "Helvetica";
+  font-size: 13px;
+}
+
+line {
+	stroke:#000000;
+}
+.highlight{
+	fill : "none"
+}
+
+.tooltip {	
+    position: absolute;			
+    text-align: left;			
+    width: 200px;					
+    height: 70px;					
+    padding: 2px;				
+    font: 12px "Helvetica";		
+    background: white;
+    border: 1px;		
+    border-radius: 3px;		
+	border-color:gray;	
+    pointer-events: none;			
+}
+.stateName {
+	font-size: 16px;
+}
+
+.evs {
+	font-size: 12px;
+	color:  gray;
+}
+
+.d{
+	font-size: 8px;
+	color: #6BAED6;
+}
+.r{
+	font-size: 8px;
+	color:  #A51015;
+}
+
+</style>
+
+<svg width="0" height="0"></svg>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script>
+d3.select("body").append("h1").text("US Presidential Electoral Map from 1940 to 2016");
+var statePositions = [
+	0,11,  
+	22,23, 
+	25,26,27,28,29,30,31,32,33,34,35,
+	37,38,39,40,41,42,43,44,45,46,
+	49,50,51,52,53,54,55,56,57,58,
+	62,63,64,65,66,67,68,69,
+	76,77,78,79,80,
+	85,88,93
+	];
+var stateNames = [
+	"AK","ME",
+	"VT","NH",
+	"WA", "ID", "MT", "ND", "MN", "IL", "WI", "MI", "NY", "RI", "MA",
+	"OR", "NV", "WY", "SD", "IA", "IN", "OH", "PA", "NJ", "CT",
+	"CA", "UT", "CO", "NE", "MO", "KY", "WV", "VA", "MD", "DC",
+	"AZ", "NM", "KS", "AR", "TN", "NC", "SC", "DE",
+	"OK", "LA", "MS", "AL", "GA",
+	"HI", "TX","FL"
+	];
+var colors = [
+	'#063E78', '#09519C', '#3182BD', '#6BAED6', '#9ECAE1', '#C6DBEF',
+	'#FCBBA1', '#FC9171', '#FB6A4A', '#DE2D26', '#A51015', '#860408'
+	];
+var bufferW = 300;
+var canvasW = 1000;
+var canvasH = 600;
+var bufferH = 200;
+var circleBuff = 20;
+var lineY = bufferH/6;
+
+
+var chartY = bufferH;
+var chartX = bufferW/10;
+
+var stateW = (canvasW-bufferW)/12;
+var stateH = (canvasH-bufferH)/8;
+
+var barY = bufferH/1.75;
+var barW = stateW*.9;
+
+var svg = d3.select("body").append("svg")
+	.attr("width",canvasW)
+	.attr("height", canvasH)
+	.append('g');
+
+svg.append("line")
+    .attr("x1",0)
+	.attr("y1",lineY)
+	.attr("x2",canvasW)
+	.attr("y2",lineY);
+
+d3.csv("data/yearwise-winner.csv", function(data) {
+	return {
+			year : data.YEAR,
+			party: data.PARTY
+			};	
+	}, function(data) {
+		readData(2012);
+		var interval = ((canvasW-circleBuff)/data.length);
+		console.log(data);
+		svg.selectAll(".highlight").remove();
+				svg.append("circle")
+					.attr("class","highlight")
+					.attr("cx",circleBuff*1.5+18*interval)
+					.attr("cy",lineY)
+					.attr("r",interval/4*1.1)
+					.style("stroke-width", 3) 
+					.style("stroke", "black")
+					.style("fill", "none");
+		var circles = svg.append("g").selectAll("circle")
+			.data(data)
+            .enter();
+		circles.append("circle")	
+			.attr("cx",function(d,i){return circleBuff*1.5+i*interval})
+            .attr("cy",lineY)
+            .attr("r",interval/4)
+			.attr("fill", function(d){
+				var colorIndex;
+				if(d.party=="D"){colorIndex=2}
+				else if(d.party=="R"){colorIndex=9}
+				return colors[colorIndex];
+				})
+			.on("click",function(d,i){
+				svg.selectAll(".highlight").remove();
+				svg.append("circle")
+					.attr("class","highlight")
+					.attr("cx",circleBuff*1.5+i*interval)
+					.attr("cy",lineY)
+					.attr("r",interval/4*1.1)
+					.style("stroke-width", 3) 
+					.style("stroke", "black")
+					.style("fill", "none");
+				console.log(d.year);
+				readData(d.year);
+			});
+		circles.append("text")
+			.attr("x",function(d,i){return circleBuff*1.5+i*interval;})
+			.attr("y",lineY)
+		    .attr("dy", "1.5em")
+			.attr("text-anchor", "middle")
+			.attr("dominant-baseline", "central") 
+			.text(function(d){return d.year;});
+});	
+	
+for(var i = 0; i <12; i++){	
+	var lowerBound = -60+i*10;
+	var upperBound = lowerBound + 10;
+	svg.append("rect")
+		.attr("class", "key")
+		.attr("width", barW)
+		.attr("height",stateH/6)
+		.attr("x",i*barW+chartX+.7*stateW)
+		.attr("y",barY)
+		.attr("stroke",'#ffffff')
+		.attr("fill",colors[i]);
+	svg.append("text")
+		.attr("x",(i+.5)*barW+chartX+.7*stateW)
+		.attr("y",barY)
+		.attr("dy", "2em")
+		.attr("text-anchor", "middle")
+		.attr("dominant-baseline", "central") 
+		.style("font-size","10px")
+		.text(lowerBound+" to "+upperBound);
+}
+
+					
+var div = d3.select("body").append("div")	
+    .attr("class", "tooltip")				
+    .style("opacity", 0);
+
+function readData(year){
+	svg.selectAll(".states").remove();
+	svg.selectAll(".stateEV").remove();
+	svg.selectAll(".stateAbbrv").remove();
+	svg.selectAll(".portrait").remove();
+	var filename = "data/election-results-"+year+".csv";
+	d3.csv(filename, function(data) {
+	return {
+		state : data.State,
+		abbrv : data.Abbreviation,
+		ev : data.Total_EV,
+		d_nom : data.D_Nominee,
+		d_percent : data.D_Percentage,
+		d_votes : data.D_Votes,
+		r_nom : data.R_Nominee,
+		r_percent : data.R_Percentage,
+		r_votes : data.R_Votes
+		};	
+	}, function(data) {
+		console.log(data);
+		var counter = 0;
+		var aaa = [];
+		for(var i = 0; i <96; i++){	
+			if(statePositions.includes(i)){
+				var index = data.findIndex(x=>x.abbrv===stateNames[counter]);
+				if(index>-1){
+					aaa.push(data[index]);
+				}
+				counter++;
+				
+			}
+		}
+		var states = svg.append("g").selectAll("rect")
+			.data(aaa)
+			.enter();
+			
+		states.append("rect")
+			.attr("class","states")
+			.attr("width", stateW)
+			.attr("height",stateH)
+			.attr("x",function(d,i){return statePositions[stateNames.findIndex(x=>x===d.abbrv)]%12*stateW+chartX;})
+			.attr("y",function(d,i){return Math.floor(statePositions[stateNames.findIndex(x=>x===d.abbrv)]/12)*stateH+chartY;})
+			.attr("stroke",'#ffffff')
+			.attr("fill",'#fc53a5')
+			.attr("id", function(d){return d.abbrv})
+			.attr("fill", function(d){
+				var colorIndex = Math.floor((d.r_percent-d.d_percent)/10)+6;
+				if(colorIndex<0){colorIndex=0}
+				else if(colorIndex>11){colorIndex=11}
+				return colors[colorIndex];
+			})
+			.on("mouseover",function(d){
+				showTooltip(d);						
+			})
+			.on("mousemove",function(d){
+				showTooltip(d);					
+			})
+			.on("mouseout", function(d) {		
+				div.transition()		
+                .style("opacity", 0);	
+			});
+			
+			
+		states.append("text")
+			.attr("x",function(d,i){return statePositions[stateNames.findIndex(x=>x===d.abbrv)]%12*stateW+chartX;})
+			.attr("y",function(d,i){return Math.floor(statePositions[stateNames.findIndex(x=>x===d.abbrv)]/12)*stateH+chartY})
+			.attr("class","stateAbbrv")
+			.attr("dx", stateW/2+"px")
+		    .attr("dy", "1.25em")
+			.attr("text-anchor", "middle")
+			.attr("dominant-baseline", "central") 
+			.text(function(d){return d.abbrv;});
+		
+		states.append("text")
+			.attr("x",function(d,i){return statePositions[stateNames.findIndex(x=>x===d.abbrv)]%12*stateW+chartX;})
+			.attr("y",function(d,i){return Math.floor(statePositions[stateNames.findIndex(x=>x===d.abbrv)]/12)*stateH+chartY;})
+			.attr("class","stateEV")
+			.attr("dx", stateW/2+"px")
+		    .attr("dy", "2.5em")
+			.attr("text-anchor", "middle")
+			.attr("dominant-baseline", "central") 
+			.text(function(d){return d.ev;});
+			
+		svg.append("svg:image")
+			.attr("class","portrait")
+			.attr("xlink:href", "images/"+year+".jpg")
+			.attr('x', canvasW*.8)
+			.attr('y', bufferH)
+			.attr('width', 200)
+			.attr('height', 200);
+	});
+}
+
+function showTooltip(d){
+	div.style("opacity", 1);
+	div.html( "<span class='stateName'>"+d.state+"</span><br/>"  +
+				"<span class='evs'>Electoral Votes: "+d.ev + "</span></br>" +
+				"<span class='d'>"+d.d_nom + ": " + d.d_votes + " (" + d.d_percent + "%)</span></br>" +
+				"<span class='r'>"+d.r_nom + ": " + d.r_votes + " (" + d.r_percent + "%)</span>"
+			)
+		.style("color", function(){
+			var colorIndex = Math.floor((d.r_percent-d.d_percent)/10)+6;
+				if(colorIndex<0){colorIndex=0}
+				else if(colorIndex>11){colorIndex=11}
+				return colors[colorIndex];
+		})
+		.style("left", (d3.event.pageX) + "px")		
+		.style("top", (d3.event.pageY -70) + "px");
+}
+</script>
