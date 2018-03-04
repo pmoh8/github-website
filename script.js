@@ -18,7 +18,7 @@ function openTab(evt, tabName) {
     document.getElementById(tabName).style.display = "block";
     evt.currentTarget.className += " active";
 }
-document.onload = function(){
+window.onload = function(){
 	console.log("click");
 	document.getElementById("defaultOpen").click();
 };
