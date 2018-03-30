@@ -41,11 +41,11 @@ line {
 <svg width="0" height="0"></svg>
 <script src="https://d3js.org/d3.v4.min.js"></script>
 <script>
-d3.select("body").append("h1").text("Asthma Prevalence in the United States from 2001 to 2009");
+d3.select("body").append("h2").text("Asthma Prevalence in the United States from 2001 to 2009");
 var animateTime=1000;
 var initialized=false;
 var autoplaying = false;
-var canvasW = 700;
+var canvasW = 650;
 var canvasH = 500;
 
 var yearMin;
@@ -181,7 +181,17 @@ d3.csv("asthmadata/asthma_overall.csv", function(data) {
 			.attr("dominant-baseline", "central") 
 			.text(minPercent+"%");
 		
-			
+		circles.append("rect")
+			.attr("x",lineChartX+(11)*intervalWidth-30)
+			.attr("y",lineChartY+1/2*lineChartH-10)
+			.attr("height",20)
+			.attr("width",60)
+			.style("fill","none")
+			.style("stroke","black")
+			.on("click",function(){
+				autoplaying = true;
+				clickEvent(d3.select(".button"+(yearMin)).datum(),0);	
+			})
 		circles.append("text")
 			.attr("x",lineChartX+(11)*intervalWidth)
 			.attr("y",lineChartY+1/2*lineChartH)
@@ -189,10 +199,10 @@ d3.csv("asthmadata/asthma_overall.csv", function(data) {
 			.attr("dominant-baseline", "central") 
 			.on("click",function(){
 				autoplaying = true;
-				clickEvent(d3.select(".button"+(yearMin)).datum(),0);
-					
+				clickEvent(d3.select(".button"+(yearMin)).datum(),0);	
 			})
-			.text("Autoplay");	
+			.text("Autoplay");
+			
 		readData(yearMin);
 });	
 					
