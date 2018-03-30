@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+h1 {
+	font-family: "Helvetica";
+}
+.stateAbbrv {
+  fill: #000000;
+  font-family: "Helvetica";
+  font-size: 13px;
+}
+.stateEV {
+  fill: #000000;
+  font-family: "Helvetica";
+  font-size: 13px;
+}
+
+line {
+	stroke:#000000;
+}
+.highlight{
+	fill : "none"
+}
+
+.tooltip {	
+    position: absolute;			
+    text-align: left;			
+    width: 120px;					
+    height: 60px;					
+    padding: 2px;				
+    font: 12px "Helvetica";		
+    background: white;
+    border: 1px;		
+    border-radius: 3px;		
+	border-color:gray;	
+    pointer-events: none;			
+}
+.stateName {
+	font-size: 16px;
+}
+
+.xLabel {
+	font-size: 12px;
+}
+
+.d{
+	font-size: 12px;
+	color: #6BAED6;
+}
+.r{
+	font-size: 8px;
+	color:  #A51015;
+}
+
+</style>
+
+<svg width="0" height="0"></svg>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script>
+d3.select("body").append("h1").text("Asthma Prevalence in the United States from 2001 to 2009");
+var animateTime=1000;
+var initialized=false;
+var autoplaying = false;
+var canvasW = 700;
+var canvasH = 500;
+
+var yearMin;
+var yearMax;
+
+var buffL = 150;
+var buffR = 100;
+var buffTop = 20;
+var buffBottom = 100;
+var buffMid = 80;
+
+var numSubCategories = 3;
+
+var lineChartX = buffL;
+var lineChartY = buffTop;
+var lineChartW = canvasW-(buffL+buffR);
+var lineChartH = 50;
+var textOffsetFactor = 17/20;
+
+var maxPercent = 10.0;
+var minPercent = 5.0;
+var rangePercent = maxPercent-minPercent;
+
+var barChartX = buffL;
+var barChartY = buffTop+lineChartH+buffMid;
+var barChartW = canvasW-(buffL+buffR);
+var barChartH = canvasH - (buffTop+lineChartH+buffMid+buffBottom);
+
+var numCategories;
+var barInterval;
+var barW;
+var maxBarPercent = 25;
+var intervalWidth;
+
+var colors=['#44859C','#084659','#D0502A','#E8B650','#2E2C2D'];
+var colors2=['#72B2C9','#4B7C8C','#EB8467','#FFD275','#696869'];
+var prevcoords1 = [[0,0,0,0,0],
+					[0,0,0,0,0],
+					[0,0,0,0,0]];
+var called = [false, false, false, false, false, false, false, false, false];
+var svg = d3.select("body").append("svg")
+	.attr("width",canvasW)
+	.attr("height", canvasH)
+	.append('g');
+var offset = 10;
+svg.append("line")
+	.attr("class","axes")
+    .attr("x1",lineChartX+offset)
+	.attr("y1",lineChartY)
+	.attr("x2",lineChartX+lineChartW-offset)
+	.attr("y2",lineChartY)
+	.style("stroke",'LightGray');
+	
+svg.append("line")
+	.attr("class","axes")
+    .attr("x1",lineChartX+offset)
+	.attr("y1",lineChartY+lineChartH)
+	.attr("x2",lineChartX+lineChartW-offset)
+	.attr("y2",lineChartY+lineChartH)
+	.style("stroke",'LightGray');
+
+svg.append("line")
+	.attr("class","axes")
+	.attr("x1",lineChartX+offset)
+	.attr("y1",lineChartY+.5*lineChartH)
+	.attr("x2",lineChartX+lineChartW-offset)
+	.attr("y2",lineChartY+.5*lineChartH)
+	.style("stroke", "LightGray")
+	.style("fill", "none");
+
+
+d3.csv("data/asthma_overall.csv", function(data) {
+	return {
+			year : data.Year,
+			percent: data.Total_Percent
+			};	
+	}, function(data) {
+		yearMin = data[0].year;
+		yearMax = data[data.length-1].year;
+		intervalWidth = (lineChartW/(data.length+1));
+		svg.selectAll(".highlight").remove();
+				svg.append("circle")
+					.attr("class","highlight")
+					.attr("cx", lineChartX+intervalWidth)
+					.attr("cy", lineChartY+lineChartH-lineChartH*((data[0].percent-minPercent)/rangePercent))
+					.attr("r",8)
+					.style("stroke-width", 3) 
+					.style("stroke", colors[0])
+					.style("fill", "none");
+		
+		var line = d3.line()
+		.x(function(d,i){return lineChartX+(i+1)*intervalWidth})
+		.y(function(d,i){return lineChartY+lineChartH-lineChartH*((d.percent-minPercent)/rangePercent)})
+	
+		svg.append("path")
+		  .data([data])
+		  .attr("fill", "none")
+		  .attr("stroke", colors[0])
+		  .attr("stroke-width", 1)
+		  .attr("class", "line")
+		  .attr("d", line);
+			
+		var circles = svg.append("g").selectAll("circle")
+			.data(data)
+            .enter();	
+		
+		circles.append("circle")	
+			.attr("cx",function(d,i){return lineChartX+(i+1)*intervalWidth})
+            .attr("cy",function(d,i){return lineChartY+lineChartH-lineChartH*((d.percent-minPercent)/rangePercent)})
+            .attr("r",5)
+			.on("click",function(d,i){clickEvent(d,i,intervalWidth)});
+			
+		circles.append("text")
+			.attr("class",function(d){return "button"+d.year})
+			.attr("x",function(d,i){return lineChartX+(i+1)*intervalWidth})
+			.attr("y",lineChartY+lineChartH)
+		    .attr("dy", "1em")
+			.attr("text-anchor", "middle")
+			.attr("dominant-baseline", "central") 
+			.on("click",function(d,i){clickEvent(d,i,intervalWidth)})
+			.text(function(d){return d.year;});
+		circles.append("text")
+			.attr("x",lineChartX-10)
+			.attr("y",lineChartY)
+			.attr("text-anchor", "middle")
+			.attr("dominant-baseline", "central") 
+			.text(maxPercent+"%");
+		
+		circles.append("text")
+			.attr("x",lineChartX-10)
+			.attr("y",lineChartY+lineChartH)
+			.attr("text-anchor", "middle")
+			.attr("dominant-baseline", "central") 
+			.text(minPercent+"%");
+		
+			
+		circles.append("text")
+			.attr("x",lineChartX+(11)*intervalWidth)
+			.attr("y",lineChartY+1/2*lineChartH)
+			.attr("text-anchor", "middle")
+			.attr("dominant-baseline", "central") 
+			.on("click",function(){
+				autoplaying = true;
+				clickEvent(d3.select(".button"+(yearMin)).datum(),0);
+					
+			})
+			.text("Autoplay");	
+		readData(yearMin);
+});	
+					
+var div = d3.select("body").append("div")	
+    .attr("class", "tooltip")				
+    .style("opacity", 0);
+	
+function clickEvent(d,i){
+				svg.selectAll(".highlight").remove();
+				svg.append("circle")
+					.attr("class","highlight")
+					.attr("cx", lineChartX+(i+1)*intervalWidth)
+					.attr("cy", lineChartY+lineChartH-lineChartH*((d.percent-minPercent)/rangePercent))
+					.attr("r",8)
+					.style("stroke-width", 3) 
+					.style("stroke", colors[0])
+					.style("fill", "none");
+				return(readData(d.year));
+}
+
+function readData(year){
+	var filename = "data/asthma_"+year+".csv";
+	d3.csv(filename, function(data) {
+	return {
+		label: data.Label_Name,
+		totalPercent: data.Total_Percent,
+		childrenPercent: data.Children_Percent,
+		adultPercent: data.Adult_Percent,
+		totalNumber: data.Total_Number,
+		childrenNumber: data.Children_Number,
+		adultNumber: data.Adult_Number,
+		};	
+	}, function(data) {
+		console.log(data);
+		svg.selectAll(".bars").remove();
+		numCategories = 15/numSubCategories;
+		barInterval = barChartW/numCategories;
+		barW = barInterval/numCategories;
+		var dataTotalsOnly = [];
+		var dataMalesOnly = [];
+		var dataFemalesOnly = [];
+		for(var i = 0; i <15; i++){	
+			if(i%3==0){
+				dataTotalsOnly.push(data[i]);
+			}
+			else if(i%3==1){
+				dataMalesOnly.push(data[i]);
+			}
+			else{
+				dataFemalesOnly.push(data[i]);
+			}
+		}
+		
+        var axes = svg.append("g").selectAll("line")
+			.data(dataTotalsOnly).enter();	
+		var labels = svg.append("g").selectAll("text")
+			.data(dataTotalsOnly).enter();	
+			
+		if(!initialized){
+			setupAxes(axes,labels);
+		}
+		
+		var y=d3.scaleLinear().domain([0,maxBarPercent]).range([barChartY+barChartH,barChartY]);
+		
+		const t = d3.transition()
+            .duration(animateTime);
+			
+		const bars = svg.append("g")
+			.data(dataTotalsOnly);
+		bars.exit().remove();
+		bars.transition(t)
+			.attr("transform",function(d,i){return "translate("+(barW+barChartX+i*barInterval)+","+(y(d.totalPercent))+")";})
+		bars.select("rect")
+			.transition(t)
+		  .attr("height",function(d,i){return barChartH+barChartY-y(d.totalPercent);})
+		  
+		const chart = bars.enter().append("g")
+			.attr("transform",function(d,i){return "translate("+(barW+barChartX+i*barInterval)+","+(barChartH+barChartY)+")";});
+		chart.transition(t)
+		.attr("transform",function(d,i){return "translate("+(barW+barChartX+i*barInterval)+","+(y(d.totalPercent))+")";});
+		
+		var currentcoords1= [[0,0,0,0,0],
+							[0,0,0,0,0],
+							[0,0,0,0,0]];
+		for(var k = 0; k <3; k++){
+			var colorPalette = colors;
+			if(k!=0){
+				colorPalette = colors2;
+			}
+			
+			var rectangle = axes.append("rect")
+				.attr("class","bars " +k)
+				.attr("width", barW)
+				.attr("height",function(d,i){
+					var info;
+					if(k==0){
+						info = d.totalPercent;
+					}
+					else if(k==1){
+						info = d.adultPercent;
+					}
+					else{
+						info = (d.childrenPercent);
+					}
+					currentcoords1[k][i] = y(info);
+					if(!initialized){
+						return barChartH+barChartY-currentcoords1[k][i];
+					}
+					else{
+						return barChartH+barChartY-prevcoords1[k][i];
+					}
+					})
+				.attr("transform",function(d,i){
+					if(!initialized){
+						return "translate("+((k+1)*barW+barChartX+i*barInterval+k)+","+currentcoords1[k][i]+")";
+					}
+					else{
+						return "translate("+((k+1)*barW+barChartX+i*barInterval+k)+","+prevcoords1[k][i]+")";
+					}})
+				.attr("stroke",'none')
+				.attr("fill",function(d,i){return colorPalette[i];})
+				.on("mousemove",function(d,i){
+					showTooltip(d,i,this.getAttribute('class'));					
+				})
+				.on("mouseout", function() {		
+					div.transition()		
+					.style("opacity", 0);	
+				});
+				
+			rectangle.transition(t)
+				.attr("height",function(d,i){ return barChartH+barChartY-currentcoords1[k][i]; })
+				.attr("transform",function(d,i){return "translate("+((k+1)*barW+barChartX+i*barInterval+k)+","+currentcoords1[k][i]+")";})
+				.on("end", function(d,i) {
+					if(autoplaying&&k==3&&i==4){
+						var index = parseInt(year)-(yearMin-1);
+						if(parseInt(year)<yearMax&&called[parseInt(year)-(yearMin)]==false){
+							called[parseInt(year)-(yearMin)]=true;
+							clickEvent(d3.select(".button"+(parseInt(year)+1)).datum(),(parseInt(year)-(2001-1)));
+						}
+						else if (parseInt(year)==yearMax){
+							autoplaying = false;
+							called = [false, false, false, false, false, false, false, false, false];
+						}
+					}
+				});
+				prevcoords1[k] = currentcoords1[k];
+		}
+		
+		
+		if(!initialized){
+			initialized=true;
+		}
+			svg.selectAll(".Xaxes").remove();
+			
+		axes.append("line")
+			.attr("class","Xaxes")
+			.attr("x1",barChartX)
+			.attr("x2",barChartX+barChartW)
+			.attr("y1",barChartY+barChartH)
+			.attr("y2",barChartY+barChartH)
+			.style("stroke", "black")
+			.style("fill", "none");
+			return true;
+			
+	});
+}
+function setupAxes(axes,labels){
+			var k;
+			if(maxBarPercent>40){
+				k=10;
+			}
+			else{
+				k=5;
+			}
+			var j = Math.floor(maxBarPercent/k);
+			for(var i = 1; i < j; i++){
+				axes.append("line")
+					.attr("class","axes")
+					.attr("x1",barChartX)
+					.attr("x2",barChartX+barChartW)
+					.attr("y1",barChartY+barChartH-i*(barChartH/j))
+					.attr("y2",barChartY+barChartH-i*(barChartH/j))
+					.style("stroke", "LightGray")
+					.style("fill", "none");
+					
+				axes.append("text")
+				.attr("x",barChartX*textOffsetFactor)
+				.attr("y",barChartY+barChartH-i*(barChartH/j))
+				.attr("dy", ".25em")
+				.text(Math.floor(maxBarPercent/j)*i);
+			}
+			axes.append("text")
+					.attr("class","label")
+					.attr("x",lineChartX/3)
+					.attr("y",lineChartY+1/3*lineChartH)
+					.attr("text-anchor", "middle")
+					.attr("dominant-baseline", "central") 
+					.text("% Prevalence");
+					
+				axes.append("text")
+					.attr("class","label")
+					.attr("x",lineChartX/3)
+					.attr("dy", "1.25em")
+					.attr("y",lineChartY+1/3*lineChartH)
+					.attr("text-anchor", "middle")
+					.attr("dominant-baseline", "central") 
+					.text("Overall");
+					
+			axes.append("line")
+					.attr("class","axes")
+					.attr("x1",barChartX)
+					.attr("x2",barChartX+barChartW)
+					.attr("y1",barChartY)
+					.attr("y2",barChartY)
+					.style("stroke", "LightGray")
+					.style("fill", "none");
+				
+				axes.append("line")
+					.attr("class","axes")
+					.attr("x1",barChartX)
+					.attr("x2",barChartX)
+					.attr("y1",barChartY)
+					.attr("y2",barChartY+barChartH)
+					.style("stroke", "black")
+					.style("fill", "none");
+				
+				axes.append("text")
+					.attr("class","label")
+					.attr("x",barChartX*textOffsetFactor)
+					.attr("y",barChartY+barChartH)
+					.attr("dy", ".25em")
+					.text("0");
+				
+				axes.append("text")
+					.attr("class","label")
+					.attr("x",barChartX*textOffsetFactor)
+					.attr("y",barChartY)
+					.attr("dy", ".25em")
+					.text(maxBarPercent);
+					
+				axes.append("text")
+					.attr("class","label")
+					.attr("x",barChartX/3)
+					.attr("y",barChartY+1/2*barChartH)
+					.attr("text-anchor", "middle")
+					.attr("dominant-baseline", "central") 
+					.text("% Prevalence");
+					
+				axes.append("text")
+					.attr("class","label")
+					.attr("x",barChartX/3)
+					.attr("dy", "1.25em")
+					.attr("y",barChartY+1/2*barChartH)
+					.attr("text-anchor", "middle")
+					.attr("dominant-baseline", "central") 
+					.text("by Population");
+				
+				axes.append("text")
+					.attr("x",function(d,i){return 2.5*barW+barChartX+i*barInterval})
+					.attr("y",barChartY+barChartH+.6*buffBottom)
+					.attr("dy", ".25em")
+					.attr("text-anchor", "middle")
+					.attr("dominant-baseline", "central") 
+					.text(function(d,i){return d.label;});
+					
+			for(var i = 0; i < 5; i++){
+				var l1 = labels.append("text")
+					.attr("class","xLabel")
+					.attr("text-anchor", "end")
+					.text("Overall");
+				l1.attr("transform", function(d,i){
+				  return "translate(" +((1)*barW+barChartX+(i*barInterval+15))+ "," + (barChartH+barChartY+buffBottom/10) + ") rotate(-60)";
+					})
+				var l2 = labels.append("text")
+					.attr("class","xLabel")
+					.attr("text-anchor", "end")
+					.text("Adult");
+				l2.attr("transform", function(d,i){
+				  return "translate(" +((2)*barW+barChartX+(i*barInterval+15))+ "," + (barChartH+barChartY+buffBottom/10) + ") rotate(-60)";
+					})
+				var l3 = labels.append("text")
+					.attr("class","xLabel")
+					.attr("text-anchor", "end")
+					.text("Children");
+				l3.attr("transform", function(d,i){
+				  return "translate(" +((3)*barW+barChartX+(i*barInterval+15))+ "," + (barChartH+barChartY+buffBottom/10) + ") rotate(-60)";
+					})
+			};
+				
+				
+}
+
+function showTooltip(d,i,k){
+	div.style("opacity", 1);
+	var subcat;
+	var selection;
+	if(parseInt(k[5])==0){
+		subcat="Overall";
+		selection = "total";
+	}
+	else if(parseInt(k[5])==1){
+		subcat="Adults";
+		selection="adult";
+	}
+	else{
+		subcat="Children";
+		selection="children";
+	}
+	div.html( "<span class='label'>"+d.label+" " +subcat+"</span><br/>"  +
+				"<span class='evs'>Percent Affected:  "+d[selection+'Percent'] + "%</span></br>" +
+				"<span class='d'>Number Affected:  "+ d[selection+'Number'] + "</span></br>" 
+			)
+		.style("color", function(){
+			var colorIndex = Math.floor((d.r_percent-d.d_percent)/10)+6;
+				if(colorIndex<0){colorIndex=0}
+				else if(colorIndex>11){colorIndex=11}
+				return colors[colorIndex];
+		})
+		.style("left", (d3.event.pageX) + "px")		
+		.style("top", (d3.event.pageY -70) + "px");
+		
+}
+</script>
